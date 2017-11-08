@@ -68,7 +68,7 @@ class KelioBridge {
 
 			$import_key =substr( base64_encode($projectKey.$taskKey.$userKey.$data->date), 0 ,14);
 
-			$userTime = $this->_get_user_from_key($userKey);
+			$userTime = $this->_get_user_from_key($userKey,$data);
 			$task = $this->_get_task_from_key($projectKey,$taskKey, $data->jobDescription);
 
 			if($task!==false && $userTime!==false) {
@@ -173,7 +173,7 @@ class KelioBridge {
 
 	}
 
-	private function _get_user_from_key($userKey) {
+	private function _get_user_from_key($userKey,$data) {
 		global $TUser,$db, $user;
 
 		if(empty($TUser))$TUser=array();
@@ -194,9 +194,23 @@ class KelioBridge {
 
 			}
 			else {
-				$this->errors[] = 'unknown user '.$userKey;
 
-				return false;
+				$res = $db->query("SELECT rowid FROM ".MAIN_DB_PREFIX."user WHERE firstname='".$db->escape($data->employeeFirstName)."' AND lastname='".$db->escape($data->employeeSurname)."'");
+				if($obj= $db->fetch_object($res)) {
+
+					$u =new User($db);
+					$u->fetch($obj->rowid);
+
+					$TUser[$userKey] = $u;
+
+				}
+				else {
+
+					$this->errors[] = 'unknown user '.$userKey;
+
+					return false;
+
+				}
 			}
 		}
 
