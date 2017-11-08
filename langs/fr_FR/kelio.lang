@@ -5,3 +5,9 @@ ATMAbout = Ce module a été développé par <a href="http://www.atm-consulting.
 
 KelioSetup = Configuration du module Kelio
 KelioAbout = A propos du module Kelio
+
+KelioBadgeId=Id. du badge
+KELIO_WSLD_USER=login du webservice
+KELIO_WSLD_PASS=Mot de passe du webservice
+KELIO_SERVICE_URI=Url des webservices
+TimeFromKelio=Temps issu de Kelio
