@@ -75,7 +75,7 @@ class KelioBridge {
 				$ret = $task->add_contact($userTime->id, 181,'internal');
 				if($ret<0) {
 					$this->errors[]='user already ad contact of task '.$task->ref;
-					var_dump($task);exit;
+					//var_dump($task);exit;
 
 				}
 
@@ -84,7 +84,12 @@ class KelioBridge {
 				$task->timespent_fk_user = $userTime->id;
 				$task->timespent_note = $langs->trans('TimeFromKelio');
 
-				$res = $db->query("SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time WHERE import_key='".$import_key."'");
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time ";
+				$sql.= "WHERE fk_user = ".$task->timespent_fk_user." ";
+				$sql.= "AND fk_task = ".$task->id." ";
+				$sql.= "AND task_date = '".$data->date."' ";
+
+				$res = $db->query($sql);
 				if($obj = $db->fetch_object($res)) {
 					$task->timespent_id = $obj->rowid;
 					$task->updateTimeSpent($user);
