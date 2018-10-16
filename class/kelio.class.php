@@ -44,6 +44,7 @@ class KelioBridge {
 				,'date'=>$date
 		);
 		try {
+			// Cette fonction renvoie le temps passé pour un user, un jour, une affaire et un job
 			$res = $client->exportActualPerpetualJobTotalsListFromDate($parameters);
 		}
 		catch(Exception $e) {
@@ -66,8 +67,6 @@ class KelioBridge {
 			$userKey = $data->employeeBadgeCode;
 			$taskKey = $data->jobCode;
 
-			$import_key =substr( base64_encode($projectKey.$taskKey.$userKey.$data->date), 0 ,14);
-
 			$userTime = $this->_get_user_from_key($userKey,$data);
 			$task = $this->_get_task_from_key($projectKey,$taskKey, $data->jobDescription);
 
@@ -75,8 +74,6 @@ class KelioBridge {
 				$ret = $task->add_contact($userTime->id, 181,'internal');
 				if($ret<0) {
 					$this->errors[]='user already ad contact of task '.$task->ref;
-					//var_dump($task);exit;
-
 				}
 
 				$task->timespent_date = strtotime($data->date);
@@ -84,6 +81,7 @@ class KelioBridge {
 				$task->timespent_fk_user = $userTime->id;
 				$task->timespent_note = $langs->trans('TimeFromKelio');
 
+				// On vérifie si le temps n'existe pas déjà pour le même user, la même tâche et la même date
 				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time ";
 				$sql.= "WHERE fk_user = ".$task->timespent_fk_user." ";
 				$sql.= "AND fk_task = ".$task->id." ";
@@ -96,8 +94,6 @@ class KelioBridge {
 				}
 				else{
 					$task->addTimeSpent($user);
-					$res = $db->query("UPDATE ".MAIN_DB_PREFIX."projet_task_time SET import_key='".$import_key."' WHERE rowid=".$task->timespent_id);
-
 				}
 			}
 		}
