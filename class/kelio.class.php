@@ -16,32 +16,19 @@ class KelioBridge {
 		global $conf;
 
 		$client = new SoapClient($conf->global->KELIO_SERVICE_URI.'JobTotalService?wsdl'
-				, array(
-						'login'=> $conf->global->KELIO_WSLD_USER
-						,'password' =>  $conf->global->KELIO_WSLD_PASS
-						,'trace'=>true
-				)
-				);
-
-			/*$parameters= array(
-				'populationFilter'=>''
-				,'groupFilter'=>''
-				,'offset'=>0
+			, array(
+				'login'=> $conf->global->KELIO_WSLD_USER
+				,'password' =>  $conf->global->KELIO_WSLD_PASS
+				,'trace'=>true
+			)
 		);
-		try {
-			$res = $client->exportActualPeriodicalJobTotals($parameters);
-		}
-		catch(Exception $e) {
-			pre($e,1);
-
-		}*/
 
 		if(empty($date)) $date=date('Y-m-d',strtotime('-1day'));
 
 		$parameters= array(
-				'populationFilter'=>''
-				,'groupFilter'=>''
-				,'date'=>$date
+			'populationFilter'=>''
+			,'groupFilter'=>''
+			,'date'=>$date
 		);
 		try {
 			// Cette fonction renvoie le temps passé pour un user, un jour, une affaire et un job
@@ -52,11 +39,11 @@ class KelioBridge {
 		}
 
 		$this->_gtfos_parseData($res->exportedPerpetualJobTotals->PerpetualJobTotal);
-
 	}
 
 	private function _gtfos_parseData(&$TData) {
 		global $db, $user,$langs;
+		$langs->load('kelio@kelio');
 
 		$this->errors = array();
 
@@ -119,7 +106,6 @@ class KelioBridge {
 		if(empty($TTask))$TTask=array();
 		if(empty($TProject))$TProject=array();
 
-
 		if(!isset($TTask[$key])) {
 
 			if(!isset($TProject[$projectKey])) {
@@ -170,8 +156,6 @@ class KelioBridge {
 		}
 
 		return 	$TTask[$key];
-
-
 	}
 
 	private function _get_user_from_key($userKey,$data) {
@@ -216,7 +200,6 @@ class KelioBridge {
 		}
 
 		return $TUser[$userKey];
-
 	}
 
 	function getEmployees() {
