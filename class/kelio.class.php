@@ -9,6 +9,14 @@ class KelioBridge {
 
 	}
 
+	function getTimeForLastDays($nbdays=1) {
+		while($nbdays > 0) {
+			$date=date('Y-m-d',strtotime('-'.$nbdays.'day'));
+			$this->getTimeFromOuterSpace($date);
+			$nbdays--;
+		}
+	}
+
 	/*
 	 * En mode startrek, beyond the star, la recherche est infinie
 	 */
@@ -33,6 +41,7 @@ class KelioBridge {
 		try {
 			// Cette fonction renvoie le temps passé pour un user, un jour, une affaire et un job
 			$res = $client->exportActualPerpetualJobTotalsListFromDate($parameters);
+			//pre($res,true);
 		}
 		catch(Exception $e) {
 			pre($e,1);
