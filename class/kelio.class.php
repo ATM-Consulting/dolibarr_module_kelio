@@ -131,7 +131,14 @@ class KelioBridge {
 
 			$project = $TProject[$projectKey];
 
-			$res = $db->query("SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task WHERE ref='".$key."'");
+			$sql = "SELECT pt.rowid FROM ".MAIN_DB_PREFIX."projet_task pt ";
+			$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."projet p ON pt.fk_projet = p.rowid ";
+			$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."projet_task_extrafields ptext ON pt.rowid = ptext.fk_object ";
+			$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."workstation w ON ptext.fk_workstation = w.rowid ";
+			$sql.= "WHERE p.ref = '".$projectKey."' ";
+			$sql.= "AND w.code = '".$taskKey."' ";
+
+			$res = $db->query($sql);
 			$task=new Task($db);
 			if($obj= $db->fetch_object($res)) {
 
@@ -151,7 +158,7 @@ class KelioBridge {
 				$task->date_end = $project->date_end;
 				$task->planned_workload = 0;
 
-				$task->progress = 0;
+				$task->progress = 100; // 100% pour éviter qu'une tâche créée ne s'ajoute dans les "à faire"
 
 				$res = $task->create($user);
 				if($res<0) {
