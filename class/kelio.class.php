@@ -56,9 +56,7 @@ class KelioBridge {
 
 		$this->errors = array();
 
-		ob_start();
 		foreach($TData as &$data) {
-
 			$projectKey = $data->costCentreAbbreviation;
 			$userKey = $data->employeeBadgeCode;
 			$taskKey = $data->jobCode;
@@ -73,6 +71,7 @@ class KelioBridge {
 				}
 
 				$task->timespent_date = strtotime($data->date);
+				$task->timespent_datehour = strtotime($data->date);
 				$task->timespent_duration = $data->hours * 3600;
 				$task->timespent_fk_user = $userTime->id;
 				$task->timespent_note = $langs->trans('TimeFromKelio');
@@ -93,8 +92,6 @@ class KelioBridge {
 				}
 			}
 		}
-
-		ob_get_clean();
 
 		if(count($this->errors)>0) {
 
