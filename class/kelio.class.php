@@ -106,7 +106,7 @@ class KelioBridge {
 	}
 	private function _get_task_from_key($projectKey,$taskKey, $label) {
 
-		global $TTask,$TProject,$db, $user;
+		global $TTask,$TProject,$TWorkStation,$db, $user;
 
 		dol_include_once('/projet/class/project.class.php');
 		dol_include_once('/projet/class/task.class.php');
@@ -114,6 +114,8 @@ class KelioBridge {
 		$key = $projectKey.'-'.$taskKey;
 		if(empty($TTask))$TTask=array();
 		if(empty($TProject))$TProject=array();
+		if(empty($TWorkstation))$TWorkstation=array();
+
 
 		if(!isset($TTask[$key])) {
 
@@ -131,21 +133,35 @@ class KelioBridge {
 
 			$project = $TProject[$projectKey];
 
+			if(!isset($TWorkstation[$taskKey])) {
+				$sql = "SELECT w.rowid FROM ".MAIN_DB_PREFIX."workstation w ";
+				$sql.= "WHERE w.code = '".$taskKey."'";
+				$res = $db->query($sql);
+
+				if($obj = $db->fetch_object($res)) {
+					$TWorkstation[$taskKey] = $obj->rowid;
+				} else {
+					$this->errors[] = 'unknown workstation '.$taskKey;
+				}
+                        }
+
+			$wsid = !empty($TWorkstation[$taskKey]) ? $TWorkstation[$taskKey] : 0;
+
+			// Recherche de la tâche associée au projet et au workstation
 			$sql = "SELECT pt.rowid FROM ".MAIN_DB_PREFIX."projet_task pt ";
 			$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."projet p ON pt.fk_projet = p.rowid ";
 			$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."projet_task_extrafields ptext ON pt.rowid = ptext.fk_object ";
-			$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."workstation w ON ptext.fk_workstation = w.rowid ";
-			$sql.= "WHERE p.ref = '".$projectKey."' ";
-			$sql.= "AND w.code = '".$taskKey."' ";
+			$sql.= "WHERE ((p.ref = '".$projectKey."' AND ptext.fk_workstation = '".$wsid."') ";
+			$sql.= "OR (pt.ref = '".$key."')) ";
 
 			$res = $db->query($sql);
 			$task=new Task($db);
-			if($obj= $db->fetch_object($res)) {
+			if($obj = $db->fetch_object($res)) {
 
 				$task->fetch($obj->rowid);
 
 			}
-			else {
+			else { // Sinon création de la tâche
 
 				$task=new Task($db);
 				$task->fk_project = $project->id;
@@ -159,6 +175,8 @@ class KelioBridge {
 				$task->planned_workload = 0;
 
 				$task->progress = 100; // 100% pour éviter qu'une tâche créée ne s'ajoute dans les "à faire"
+
+				$task->array_options['options_fk_workstation'] = $wsid;
 
 				$res = $task->create($user);
 				if($res<0) {

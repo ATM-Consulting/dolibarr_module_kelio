@@ -9,6 +9,7 @@
 
 	$k=new KelioBridge($db);
 
-	$k->getTimeFromOuterSpace();
-	//$k->getClocking()
+	//$k->getTimeFromOuterSpace();
+	$k->getTimeForLastDays(30);
+	//$k->getClocking();
 	//$k->getEmployees();
