@@ -6,7 +6,7 @@ class KelioBridge {
 	function __construct($db) {
 
 		$this->db = &$db;
-
+		$this->errors = array();
 	}
 
 	function getTimeForLastDays($nbdays=1) {
@@ -15,6 +15,15 @@ class KelioBridge {
 			$this->getTimeFromOuterSpace($date);
 			$nbdays--;
 		}
+
+		if(count($this->errors)>0) {
+                        $this->output = implode("\n", $this->errors);
+                        //var_dump($this->errors);
+                        return 0;
+                } else {
+                        $this->output = 'time correctly synced'; 
+                        return 1;
+                }
 	}
 
 	/*
@@ -48,13 +57,20 @@ class KelioBridge {
 		}
 
 		$this->_gtfos_parseData($res->exportedPerpetualJobTotals->PerpetualJobTotal);
+
+		if(count($this->errors)>0) {
+                        $this->output = implode("\n", $this->errors);
+                        //var_dump($this->errors);
+                        return 0;
+                } else {
+                        $this->output = 'time correctly synced'; 
+                        return 1;
+                }
 	}
 
 	private function _gtfos_parseData(&$TData) {
 		global $db, $user,$langs;
 		$langs->load('kelio@kelio');
-
-		$this->errors = array();
 
 		foreach($TData as &$data) {
 			$projectKey = $data->costCentreAbbreviation;
@@ -92,15 +108,8 @@ class KelioBridge {
 				}
 			}
 		}
-
-		if(count($this->errors)>0) {
-
-			var_dump($this->errors);
-		}
-
-		echo 1;
-
 	}
+
 	private function _get_task_from_key($projectKey,$taskKey, $label) {
 
 		global $TTask,$TProject,$TWorkStation,$db, $user;
