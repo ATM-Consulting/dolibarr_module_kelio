@@ -31,7 +31,7 @@ class KelioBridge {
 	 */
 	function getTimeFromOuterSpace($date='') {
 		global $conf;
-
+		//echo '<hr>'.$date.'<hr>';
 		$client = new SoapClient($conf->global->KELIO_SERVICE_URI.'JobTotalService?wsdl'
 			, array(
 				'login'=> $conf->global->KELIO_WSLD_USER
@@ -60,6 +60,7 @@ class KelioBridge {
 
 		if(count($this->errors)>0) {
                         $this->output = implode("\n", $this->errors);
+			//echo nl2br($this->output);
                         //var_dump($this->errors);
                         return 0;
                 } else {
@@ -69,6 +70,8 @@ class KelioBridge {
 	}
 
 	private function _gtfos_parseData(&$TData) {
+		if(empty($TData)) return false;
+
 		global $db, $user,$langs;
 		$langs->load('kelio@kelio');
 
@@ -76,7 +79,7 @@ class KelioBridge {
 			$projectKey = $data->costCentreAbbreviation;
 			$userKey = $data->employeeBadgeCode;
 			$taskKey = $data->jobCode;
-
+//echo "$projectKey - $userKey - $taskKey<hr>";
 			$userTime = $this->_get_user_from_key($userKey,$data);
 			$task = $this->_get_task_from_key($projectKey,$taskKey, $data->jobDescription);
 
